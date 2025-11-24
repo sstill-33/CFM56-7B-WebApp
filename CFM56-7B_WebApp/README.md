@@ -21,14 +21,44 @@ This application is configured to run on [Railway](https://railway.app).
    - Go to [Railway](https://railway.app)
    - Click "New Project"
    - Select "Deploy from GitHub repo"
-   - Choose this repository
+   - Choose this repository: `sstill-33/CFM56-7B-WebApp`
 
 2. **Automatic Setup:**
    - Railway will automatically detect the Python application
    - It will install dependencies from `requirements.txt`
    - The app will start using the `Procfile`
 
-3. **Environment Variables (Optional):**
+3. **Upload Database File (Required):**
+   
+   The `pdf_linked_database.json` file (230MB) is too large for GitHub and must be uploaded separately to Railway:
+   
+   **Option A: Using Railway CLI (Recommended)**
+   ```bash
+   # Install Railway CLI
+   npm i -g @railway/cli
+   
+   # Login to Railway
+   railway login
+   
+   # Link to your project
+   railway link
+   
+   # Upload the database file
+   railway run cp /path/to/pdf_linked_database.json CFM56-7B_WebApp/data/
+   ```
+   
+   **Option B: Using Railway Dashboard**
+   - Go to your Railway project
+   - Open the service terminal
+   - Use `railway run` to access the filesystem
+   - Upload the file using Railway's file upload feature or SCP
+   
+   **Option C: Using Persistent Volume**
+   - Add a volume to your Railway service
+   - Mount it to `CFM56-7B_WebApp/data/`
+   - Upload the database file to the volume
+
+4. **Environment Variables (Optional):**
    - `FLASK_ENV`: Set to `development` for debug mode (default: production)
    - `PORT`: Automatically set by Railway (no need to configure)
 
@@ -60,8 +90,10 @@ CFM56-7B_WebApp/
 │   └── search.html       # Main search interface
 ├── static/               # Static files (CSS, JS, images)
 └── data/
-    └── pdf_linked_database.json  # Search database
+    └── pdf_linked_database.json  # Search database (must be uploaded separately)
 ```
+
+**Note:** The `pdf_linked_database.json` file is excluded from git due to size limits (230MB). You must upload it separately to Railway after deployment.
 
 ## API Endpoints
 

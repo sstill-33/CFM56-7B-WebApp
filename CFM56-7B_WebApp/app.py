@@ -15,16 +15,28 @@ app = Flask(__name__)
 # Load the search database
 def load_database():
     """Load the search database"""
-    try:
-        with open('data/pdf_linked_database.json', 'r', encoding='utf-8') as f:
-            return json.load(f)
-    except FileNotFoundError:
-        return {
-            'parts': [],
-            'documents': [],
-            'categories': {},
-            'stats': {'total_parts': 0, 'total_documents': 0, 'total_categories': 0}
-        }
+    # Try multiple possible paths for Railway deployment
+    possible_paths = [
+        'data/pdf_linked_database.json',
+        'CFM56-7B_WebApp/data/pdf_linked_database.json',
+        os.path.join(os.path.dirname(__file__), 'data', 'pdf_linked_database.json')
+    ]
+    
+    for db_path in possible_paths:
+        try:
+            if os.path.exists(db_path):
+                with open(db_path, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            continue
+    
+    # Return empty database if file not found
+    return {
+        'parts': [],
+        'documents': [],
+        'categories': {},
+        'stats': {'total_parts': 0, 'total_documents': 0, 'total_categories': 0}
+    }
 
 @app.route('/')
 def index():
