@@ -15,20 +15,36 @@ app = Flask(__name__)
 # Load the search database
 def load_database():
     """Load the search database"""
+    # Get the base directory (where app.py is located)
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    
     # Try multiple possible paths for Railway deployment
     possible_paths = [
-        'data/pdf_linked_database.json',
-        'CFM56-7B_WebApp/data/pdf_linked_database.json',
-        os.path.join(os.path.dirname(__file__), 'data', 'pdf_linked_database.json')
+        os.path.join(base_dir, 'data', 'pdf_linked_database.json'),  # Relative to app.py
+        'data/pdf_linked_database.json',  # Current working directory
+        'CFM56-7B_WebApp/data/pdf_linked_database.json',  # From repo root
+        os.path.join(os.getcwd(), 'CFM56-7B_WebApp', 'data', 'pdf_linked_database.json'),  # Absolute from cwd
     ]
     
     for db_path in possible_paths:
         try:
             if os.path.exists(db_path):
+                print(f"Loading database from: {db_path}")
                 with open(db_path, 'r', encoding='utf-8') as f:
-                    return json.load(f)
+                    db = json.load(f)
+                    print(f"Database loaded successfully. Parts: {len(db.get('parts', []))}, Documents: {len(db.get('documents', []))}")
+                    return db
+            else:
+                print(f"Database not found at: {db_path}")
         except (FileNotFoundError, json.JSONDecodeError) as e:
+            print(f"Error loading database from {db_path}: {e}")
             continue
+    
+    # Log warning if database not found
+    print("WARNING: Database file not found in any of the expected locations!")
+    print(f"Current working directory: {os.getcwd()}")
+    print(f"Base directory: {base_dir}")
+    print(f"Looking for: pdf_linked_database.json")
     
     # Return empty database if file not found
     return {
@@ -112,6 +128,39 @@ def api_stats():
     """Get database statistics"""
     database = load_database()
     return jsonify(database.get('stats', {}))
+
+@app.route('/api/debug')
+def api_debug():
+    """Debug endpoint to check database file locations"""
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    cwd = os.getcwd()
+    
+    possible_paths = [
+        os.path.join(base_dir, 'data', 'pdf_linked_database.json'),
+        'data/pdf_linked_database.json',
+        'CFM56-7B_WebApp/data/pdf_linked_database.json',
+        os.path.join(os.getcwd(), 'CFM56-7B_WebApp', 'data', 'pdf_linked_database.json'),
+    ]
+    
+    path_status = {}
+    for path in possible_paths:
+        exists = os.path.exists(path)
+        path_status[path] = {
+            'exists': exists,
+            'size': os.path.getsize(path) if exists else 0
+        }
+    
+    database = load_database()
+    has_data = len(database.get('parts', [])) > 0
+    
+    return jsonify({
+        'current_working_directory': cwd,
+        'base_directory': base_dir,
+        'path_checks': path_status,
+        'database_loaded': has_data,
+        'parts_count': len(database.get('parts', [])),
+        'documents_count': len(database.get('documents', []))
+    })
 
 if __name__ == '__main__':
     # Railway provides PORT environment variable

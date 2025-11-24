@@ -394,6 +394,11 @@
                 <span class="stat-label">Categories:</span>
                 <span class="stat-value">{{ database.stats.total_categories }}</span>
             </div>
+            {% if database.stats.total_parts == 0 %}
+            <div class="stat-item" style="margin-left: auto; color: #e74c3c; font-weight: bold;">
+                ⚠ Database not loaded - Upload pdf_linked_database.json
+            </div>
+            {% endif %}
         </div>
         
         <!-- Results Area -->
