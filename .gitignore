@@ -46,9 +46,11 @@ Debug/
 # Railway
 .railway/
 
-# Large data files (if needed to exclude)
-# Uncomment if database becomes too large for git
-# CFM56-7B_WebApp/data/*.json
+# Large data files - excluded from git due to size limits
+# These need to be uploaded separately to Railway
+CFM56-7B_WebApp/data/pdf_linked_database.json
+datas/data/CMM/**/*.pdf
+search/lib/data/*.dbx
 
 # OS files
 Thumbs.db
